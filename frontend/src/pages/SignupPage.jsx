@@ -6,11 +6,11 @@ function SignupPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    navigate('/account-setup')
+    navigate('/account-setup', { replace: false })
   }
 
   return (
-    <section className="auth-wrapper">
+    <section className="auth-wrapper signup-wrapper">
       <p className="screen-label">Sign Up</p>
       <div className="auth-page signup-page">
         <div className="auth-panel">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { NavIcon } from '../components/EmployerNavIcons'
+import DeleteJobConfirmModal from '../components/DeleteJobConfirmModal'
 import { deleteJob, getJobById } from '../services/jobService'
 
 const fmtDetailDate = (iso) => {
@@ -79,6 +80,8 @@ function JobDetailsPage() {
   const [job, setJob] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -96,12 +99,17 @@ function JobDetailsPage() {
     fetchJob()
   }, [id])
 
-  const handleDelete = async () => {
-    const shouldDelete = window.confirm('Delete this job?')
-    if (!shouldDelete) return
-
-    await deleteJob(id)
-    navigate('/')
+  const confirmDelete = async () => {
+    setDeleteBusy(true)
+    try {
+      await deleteJob(id)
+      navigate('/my-jobs')
+    } catch {
+      setError('Could not delete this job.')
+      setDeleteModalOpen(false)
+    } finally {
+      setDeleteBusy(false)
+    }
   }
 
   const requirementItems = (job?.requirements || '')
@@ -115,6 +123,12 @@ function JobDetailsPage() {
 
   return (
     <section className="details-page-wrap">
+      <DeleteJobConfirmModal
+        open={deleteModalOpen}
+        onCancel={() => !deleteBusy && setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        busy={deleteBusy}
+      />
       <div className="details-shell">
         <header className="details-header employer-top-bar">
           <div className="dashboard-footer-brand">
@@ -175,7 +189,7 @@ function JobDetailsPage() {
                 <button
                   className="delete-job-btn"
                   type="button"
-                  onClick={handleDelete}
+                  onClick={() => setDeleteModalOpen(true)}
                   aria-label="Delete job"
                 >
                   <svg

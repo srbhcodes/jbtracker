@@ -3,8 +3,15 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDb = require("./config/db");
 const jobRoutes = require("./routes/jobRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  console.error("Missing JWT_SECRET in environment");
+  process.exit(1);
+}
+
 connectDb();
 
 const app = express();
@@ -17,6 +24,7 @@ app.get("/", (_req, res) => {
   res.send("Job Portal API is running");
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 
 app.use((err, _req, res, _next) => {

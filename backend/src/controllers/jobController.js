@@ -1,7 +1,15 @@
 const Job = require("../models/Job");
 
+const ownsJob = (job, userId) =>
+  job.postedBy && job.postedBy.toString() === userId.toString();
+
 const getJobs = async (_req, res) => {
   const jobs = await Job.find().sort({ createdAt: -1 });
+  res.status(200).json(jobs);
+};
+
+const getMyJobs = async (req, res) => {
+  const jobs = await Job.find({ postedBy: req.user._id }).sort({ createdAt: -1 });
   res.status(200).json(jobs);
 };
 
@@ -46,6 +54,7 @@ const createJob = async (req, res) => {
     jobLevel: jobLevel || "",
     experienceLevel: experienceLevel || "",
     educationLevel: educationLevel || "",
+    postedBy: req.user._id,
   });
 
   res.status(201).json(job);
@@ -56,6 +65,10 @@ const updateJob = async (req, res) => {
 
   if (!job) {
     return res.status(404).json({ message: "Job not found" });
+  }
+
+  if (!ownsJob(job, req.user._id)) {
+    return res.status(403).json({ message: "Not allowed to edit this job" });
   }
 
   const body = { ...req.body };
@@ -80,12 +93,17 @@ const deleteJob = async (req, res) => {
     return res.status(404).json({ message: "Job not found" });
   }
 
+  if (!ownsJob(job, req.user._id)) {
+    return res.status(403).json({ message: "Not allowed to delete this job" });
+  }
+
   await Job.findByIdAndDelete(req.params.id);
   res.status(200).json({ message: "Job deleted successfully" });
 };
 
 module.exports = {
   getJobs,
+  getMyJobs,
   getJobById,
   createJob,
   updateJob,

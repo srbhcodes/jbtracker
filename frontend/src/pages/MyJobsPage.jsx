@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NavIcon } from '../components/EmployerNavIcons'
+import DeleteJobConfirmModal from '../components/DeleteJobConfirmModal'
 import { deleteJob, getJobs } from '../services/jobService'
 
 function daysRemainingFromPosted(createdAt) {
@@ -14,6 +15,8 @@ function MyJobsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -40,16 +43,18 @@ function MyJobsPage() {
     return () => document.removeEventListener('click', close)
   }, [])
 
-  const handleDelete = async (id) => {
-    const shouldDelete = window.confirm('Delete this job?')
-    if (!shouldDelete) return
-
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return
+    setDeleteBusy(true)
     try {
-      await deleteJob(id)
-      setJobs((prev) => prev.filter((job) => job._id !== id))
+      await deleteJob(pendingDeleteId)
+      setJobs((prev) => prev.filter((job) => job._id !== pendingDeleteId))
+      setPendingDeleteId(null)
       setOpenMenuId(null)
     } catch {
       setError('Could not delete the job.')
+    } finally {
+      setDeleteBusy(false)
     }
   }
 
@@ -58,6 +63,12 @@ function MyJobsPage() {
 
   return (
     <section className="details-page-wrap">
+      <DeleteJobConfirmModal
+        open={Boolean(pendingDeleteId)}
+        onCancel={() => !deleteBusy && setPendingDeleteId(null)}
+        onConfirm={confirmDelete}
+        busy={deleteBusy}
+      />
       <div className="details-shell">
         <header className="details-header employer-top-bar">
           <div className="dashboard-footer-brand">
@@ -206,7 +217,10 @@ function MyJobsPage() {
                                 type="button"
                                 className="kebab-item kebab-delete"
                                 role="menuitem"
-                                onClick={() => handleDelete(job._id)}
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  setPendingDeleteId(job._id)
+                                }}
                               >
                                 <span className="kebab-trash">🗑</span>
                                 Delete Job

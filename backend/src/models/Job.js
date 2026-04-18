@@ -55,6 +55,11 @@ const jobSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   { timestamps: true }
 );

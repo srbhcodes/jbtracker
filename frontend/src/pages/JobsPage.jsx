@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NavIcon } from '../components/EmployerNavIcons'
+import DeleteJobConfirmModal from '../components/DeleteJobConfirmModal'
 import { deleteJob, getJobs } from '../services/jobService'
 
 function daysRemainingFromPosted(createdAt) {
@@ -33,6 +34,8 @@ function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   const fetchJobs = async () => {
     try {
@@ -61,16 +64,18 @@ function JobsPage() {
     return () => document.removeEventListener('click', close)
   }, [])
 
-  const handleDelete = async (id) => {
-    const shouldDelete = window.confirm('Delete this job?')
-    if (!shouldDelete) return
-
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return
+    setDeleteBusy(true)
     try {
-      await deleteJob(id)
-      setJobs((prev) => prev.filter((job) => job._id !== id))
+      await deleteJob(pendingDeleteId)
+      setJobs((prev) => prev.filter((job) => job._id !== pendingDeleteId))
+      setPendingDeleteId(null)
       setOpenMenuId(null)
     } catch {
       setError('Could not delete the job.')
+    } finally {
+      setDeleteBusy(false)
     }
   }
 
@@ -87,6 +92,12 @@ function JobsPage() {
 
   return (
     <section className="dashboard-page">
+      <DeleteJobConfirmModal
+        open={Boolean(pendingDeleteId)}
+        onCancel={() => !deleteBusy && setPendingDeleteId(null)}
+        onConfirm={confirmDelete}
+        busy={deleteBusy}
+      />
       <div className="dashboard-inner">
         <aside className="dashboard-sidebar">
           <p className="dashboard-title">EMPLOYERS DASHBOARD</p>
@@ -124,10 +135,6 @@ function JobsPage() {
             <NavIcon name="logout" />
             Log Out
           </button>
-          <div className="sidebar-brand-row">
-            <span className="sidebar-brand-mark" />
-            <span className="sidebar-brand-text">JobPilot</span>
-          </div>
         </aside>
 
         <div className="dashboard-main-wrap">
@@ -255,7 +262,10 @@ function JobsPage() {
                                 type="button"
                                 className="kebab-item kebab-delete"
                                 role="menuitem"
-                                onClick={() => handleDelete(job._id)}
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  setPendingDeleteId(job._id)
+                                }}
                               >
                                 <span className="kebab-trash">🗑</span>
                                 Delete Job

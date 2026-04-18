@@ -8,9 +8,13 @@ function AccountSetupSuccessPage() {
       <div className="setup-card success-card">
         <AuthBrand compact />
         <div className="success-content">
-          <div className="success-icon">✓</div>
-          <h2>Congratulations, Your profile is 100% complete!</h2>
-          <p className="auth-hint">Congratulations, Your profile is 100% complete!</p>
+          <div className="success-icon" aria-hidden>
+            ✓✓
+          </div>
+          <h2>🎉 Congratulations, Your profile is 100% complete!</h2>
+          <p className="success-subtitle">
+            You&apos;re all set — head to your dashboard or post your first job.
+          </p>
           <div className="card-actions">
             <Link className="btn soft-btn" to="/">
               View Dashboard
