@@ -1,7 +1,8 @@
 import axios from 'axios'
 
+const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
 const api = axios.create({
-  baseURL: '/api/jobs',
+  baseURL: apiBase ? `${apiBase}/api/jobs` : '/api/jobs',
 })
 
 export const getJobs = async () => {
