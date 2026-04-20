@@ -16,7 +16,7 @@ function AccountSetupSuccessPage() {
             You&apos;re all set — head to your dashboard or post your first job.
           </p>
           <div className="card-actions">
-            <Link className="btn soft-btn" to="/">
+            <Link className="btn soft-btn" to="/dashboard">
               View Dashboard
             </Link>
             <Link className="btn btn-primary" to="/jobs/new">

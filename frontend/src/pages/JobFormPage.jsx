@@ -241,7 +241,7 @@ function JobFormPage() {
           <aside className="dashboard-sidebar">
             <p className="dashboard-title">EMPLOYERS DASHBOARD</p>
             <nav className="dashboard-nav">
-              <Link className="nav-item nav-item-row link-nav" to="/">
+              <Link className="nav-item nav-item-row link-nav" to="/dashboard">
                 <NavIcon name="grid" />
                 Overview
               </Link>

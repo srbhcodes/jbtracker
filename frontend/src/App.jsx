@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import JobsPage from './pages/JobsPage'
 import MyJobsPage from './pages/MyJobsPage'
 import JobFormPage from './pages/JobFormPage'
@@ -15,12 +15,13 @@ function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/account-setup" element={<AccountSetupPage />} />
       <Route path="/account-setup/success" element={<AccountSetupSuccessPage />} />
-      <Route path="/" element={<JobsPage />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/dashboard" element={<JobsPage />} />
       <Route path="/my-jobs" element={<MyJobsPage />} />
       <Route path="/jobs/new" element={<JobFormPage />} />
       <Route path="/jobs/:id" element={<JobDetailsPage />} />
       <Route path="/jobs/:id/edit" element={<JobFormPage />} />
-      <Route path="*" element={<Link to="/">Go to Dashboard</Link>} />
+      <Route path="*" element={<Link to="/dashboard">Go to Dashboard</Link>} />
     </Routes>
   )
 }

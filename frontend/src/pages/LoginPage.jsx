@@ -6,7 +6,7 @@ function LoginPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (
