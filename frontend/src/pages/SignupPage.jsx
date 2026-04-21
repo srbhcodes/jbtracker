@@ -1,12 +1,49 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import AuthBrand from '../components/AuthBrand'
+import { useAuth } from '../contexts/AuthContext'
 
 function SignupPage() {
+  const { register, user } = useAuth()
   const navigate = useNavigate()
+  const [fullName, setFullName] = useState('')
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = (event) => {
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    navigate('/account-setup', { replace: false })
+    setError('')
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+    setBusy(true)
+    try {
+      await register({
+        fullName: fullName.trim(),
+        username: username.trim(),
+        email: email.trim(),
+        password,
+      })
+      navigate('/account-setup', { replace: false })
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Could not create account. Please try again.'
+      setError(msg)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -21,32 +58,67 @@ function SignupPage() {
           </p>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            {error ? (
+              <p className="auth-form-error" role="alert">
+                {error}
+              </p>
+            ) : null}
             <div className="input-grid">
               <label>
                 Full Name
-                <input type="text" required />
+                <input
+                  type="text"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  required
+                />
               </label>
               <label>
                 Username
-                <input type="text" required />
+                <input
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
               </label>
             </div>
 
             <label>
               Email
-              <input type="email" required />
+              <input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
             </label>
             <label>
               Password
               <div className="input-with-icon">
-                <input type="password" required />
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
                 <span className="field-icon">◔</span>
               </div>
             </label>
             <label>
               Confirm Password
               <div className="input-with-icon">
-                <input type="password" required />
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  required
+                />
                 <span className="field-icon">◔</span>
               </div>
             </label>
@@ -56,8 +128,8 @@ function SignupPage() {
               and <a href="#">Privacy Policy</a>.
             </p>
 
-            <button type="submit" className="btn btn-primary full-btn">
-              Sign Up
+            <button type="submit" className="btn btn-primary full-btn" disabled={busy}>
+              {busy ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
 

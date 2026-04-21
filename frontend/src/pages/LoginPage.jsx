@@ -1,12 +1,36 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import AuthBrand from '../components/AuthBrand'
+import { useAuth } from '../contexts/AuthContext'
 
 function LoginPage() {
+  const { login, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [emailOrUsername, setEmailOrUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = (event) => {
+  const from = location.state?.from?.pathname || '/dashboard'
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    navigate('/dashboard')
+    setError('')
+    setBusy(true)
+    try {
+      await login({ emailOrUsername: emailOrUsername.trim(), password })
+      navigate(from, { replace: true })
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Login failed. Please try again.'
+      setError(msg)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -20,22 +44,39 @@ function LoginPage() {
           </p>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            {error ? (
+              <p className="auth-form-error" role="alert">
+                {error}
+              </p>
+            ) : null}
             <label>
               Username or Email Address
-              <input type="text" required />
+              <input
+                type="text"
+                autoComplete="username"
+                value={emailOrUsername}
+                onChange={(event) => setEmailOrUsername(event.target.value)}
+                required
+              />
             </label>
             <label>
               Password
               <div className="input-with-icon">
-                <input type="password" required />
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
                 <span className="field-icon">◔</span>
               </div>
             </label>
             <Link className="small-link" to="/signup">
               Forgot your password
             </Link>
-            <button type="submit" className="btn btn-primary full-btn">
-              Log In
+            <button type="submit" className="btn btn-primary full-btn" disabled={busy}>
+              {busy ? 'Signing in...' : 'Log In'}
             </button>
           </form>
 

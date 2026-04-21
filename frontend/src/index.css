@@ -1311,6 +1311,16 @@ body {
   gap: 10px;
 }
 
+.auth-form-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(226, 85, 76, 0.12);
+  color: #b42318;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 .auth-form label,
 .setup-form label {
   display: grid;
